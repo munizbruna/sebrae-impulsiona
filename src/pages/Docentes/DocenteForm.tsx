@@ -5,15 +5,13 @@ import { RecursoService } from '../../services/RecursoService';
 import { AreaCursoService } from '../../services/AreaCursoService';
 import { Button } from '../../components/ui/Button';
 
-
-
 interface RecursoFormProps {
     initialData?: Recurso | null;
     onSuccess?: () => void;
     onCancel?: () => void;
 }
 
-export const RecursoForm: React.FC<RecursoFormProps> = ({ initialData, onSuccess, onCancel }) => {
+export const DocenteForm: React.FC<RecursoFormProps> = ({ initialData, onSuccess, onCancel }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [areasTecnologicas, setAreasTecnologicas] = useState<AreaCurso[]>([]);
 

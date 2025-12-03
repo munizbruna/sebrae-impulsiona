@@ -5,6 +5,7 @@ import { LayoutDashboard, Users, BookOpen, Box } from 'lucide-react';
 import { DocentesList } from './pages/Docentes/DocentesList';
 import { CursosList } from './pages/Cursos/CursosList';
 import { RecursoForm } from './pages/Recursos/RecursoForm';
+import { RecursoList } from './pages/Recursos/RecursoList';
 
 
 // Componente de Layout (Sidebar + Conteúdo)
@@ -84,7 +85,7 @@ function App() {
           {/* Rotas de Cadastro */}
           <Route path="/docentes" element={<DocentesList />} />
           <Route path="/cursos" element={<CursosList />} />
-          <Route path="/recursos" element={<RecursoForm />} />
+          <Route path="/recursos" element={<RecursoList />} />
           
           {/* Fallback 404 */}
           <Route path="*" element={<div>Página não encontrada</div>} />

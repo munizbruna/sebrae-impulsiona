@@ -3,12 +3,15 @@ import { Curso } from '../../types/Curso';
 import { CursoService } from '../../services/CursoService';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
+import { CursoForm } from './CursosForm'; // O formulário que acabamos de blindar
 import { Plus, BookOpen, Clock } from 'lucide-react';
 
 export const CursosList = () => {
     const [cursos, setCursos] = useState<Curso[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedCurso, setSelectedCurso] = useState<Curso | null>(null);
+    
 
     // Carregar dados reais
     useEffect(() => {
@@ -25,6 +28,11 @@ export const CursosList = () => {
             setLoading(false);
         }
     };
+     const handleCreate = () => {
+        console.log("Clicou em criar curso");
+        setIsModalOpen(true);
+    }
+
 
     return (
         <div className="animate-fade-in p-6">
@@ -33,8 +41,8 @@ export const CursosList = () => {
                     <h2 className="text-2xl font-bold text-gray-800">Catálogo de Cursos</h2>
                     <p className="text-gray-500">Gerenciamento via API .NET</p>
                 </div>
-                <Button onClick={() => setIsModalOpen(true)}>
-                    <Plus className="w-4 h-4 mr-2" /> Novo Curso
+                <Button onClick={handleCreate} variant="primary">
+                    <Plus className="w-4 h-4 mr-2" /> Adicionar Curso
                 </Button>
             </div>
 
@@ -65,21 +73,20 @@ export const CursosList = () => {
                     ))}
                 </div>
             )}
-
-            {/* Modal de Exemplo para Teste */}
-            <Modal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                title="Novo Curso"
-                footer={
-                    <>
-                        <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
-                        <Button onClick={() => alert('Implementar Logica de Save')}>Salvar</Button>
-                    </>
-                }
-            >
-                <p className="text-gray-600">Aqui entrará o formulário de cadastro de cursos.</p>
-            </Modal>
+             {/* Integração do Modal + Form */}
+                <Modal 
+                    isOpen={isModalOpen} 
+                    onClose={() => setIsModalOpen(false)}
+                    title={selectedCurso ? "Editar Recurso" : "Novo Recurso"}
+                >
+                    <CursoForm 
+                        initialData={selectedCurso}
+                       // onSuccess={handleFormSuccess}
+                        onCancel={() => setIsModalOpen(false)}
+                    />
+                </Modal>
         </div>
+        
     );
+     
 };
