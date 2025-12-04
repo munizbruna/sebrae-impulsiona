@@ -16,6 +16,11 @@ export const RecursoService = {
         const { data } = await api.get<Recurso>(`${ENDPOINT}/${id}`);
         return data;
     },
+    
+    getByArea: async (areaId: number) => {
+        const { data } = await api.get<Recurso[]>(`${ENDPOINT}/area/${areaId}`);
+        return data;
+    },
 
     // POST: Criar novo
     create: async (recurso: RecursoCreate) => {
