@@ -5,8 +5,6 @@ import { RecursoService } from '../../services/RecursoService';
 import { AreaCursoService } from '../../services/AreaCursoService';
 import { Button } from '../../components/ui/Button';
 
-
-
 interface RecursoFormProps {
     initialData?: Recurso | null;
     onSuccess?: () => void;

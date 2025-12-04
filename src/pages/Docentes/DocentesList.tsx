@@ -37,28 +37,40 @@ export const DocentesList = () => {
         setIsModalOpen(true);
     };
 
+    const handleEdit = (docente: Docente) => {
+        setSelectedDocente(docente);
+        setIsModalOpen(true);
+    };
+
 
     const handleDelete = async (id: number) => {
         if (!confirm("Tem certeza?")) return;
         try {
             await DocenteService.delete(id);
-            setDocentes(prev => prev.filter(d => d.userid !== id));
+            setDocentes(prev => prev.filter(d => d.id !== id));
         } catch (error) {
             alert("Erro ao excluir.");
         }
     }
 
+    // 3. Callbacks do Formulário
+    const handleFormSuccess = () => {
+        setIsModalOpen(false);
+        loadDocentes(); // Atualiza a lista automaticamente
+    };
+
+
     if (loading) return <div>Carregando base de dados...</div>;
 
     return (
-        <div className="animate-fade-in">
+        <div className="container mx-auto p-6">
             <div className="flex justify-between items-center mb-6">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800">Base de Docentes</h2>
                     <p className="text-gray-500">Integração via .NET API</p>
                 </div>
                 {/* Botão de Adicionar chama o Modal (que deve ser gerenciado no componente pai ou via Context) */}
-                <Button onClick={() => { }} variant="primary">
+                <Button variant="primary" onClick={handleCreate}>
                     <Plus className="w-4 h-4 mr-2" /> Novo Docente
                 </Button>
             </div>
@@ -69,25 +81,26 @@ export const DocentesList = () => {
                         <tr>
                             <th className="p-4 font-semibold">Nome</th>
                             <th className="p-4 font-semibold">Área</th>
+                            <th className="p-4 font-semibold">Especialidade</th>
                             <th className="p-4 font-semibold">Disponibilidade</th>
                             <th className="p-4 font-semibold">Horário</th>
-
                             <th className="p-4 font-semibold text-right">Ações</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 text-sm">
                         {docentes.map((d) => (
-                            <tr key={d.userid} className="hover:bg-gray-50">
-                                <td className="p-4 font-medium text-gray-900">{d.user}</td>
+                            <tr key={d.id} className="hover:bg-gray-50">
+                                <td className="p-4 font-medium text-gray-900">{d.nome}</td>
                                 <td className="p-4 text-gray-600">{d.area}</td>
-                                <td className="p-4 text-gray-600">{d.diasSemana}</td>
+                                <td className="p-4 text-gray-600">{d.especialidade}</td>
+                                <td className="p-4 text-gray-600">{d.diasDisponiveis}</td>
                                 <td className="p-4 text-gray-600">{d.horaInicio} - {d.horaFim}</td>
                                 <td className="p-4 text-right flex justify-end gap-2">
-                                    <button className="p-1.5 text-gray-500 hover:text-blue-600">
+                                    <button onClick={() => handleEdit(d)} className="p-1.5 text-gray-500 hover:text-blue-600">
                                         <Edit2 className="w-4 h-4" />
                                     </button>
                                     <button
-                                        onClick={() => handleDelete(d.userid)}
+                                        onClick={() => handleDelete(d.id)}
                                         className="p-1.5 text-gray-500 hover:text-red-600">
                                         <Trash className="w-4 h-4" />
                                     </button>
@@ -97,6 +110,21 @@ export const DocentesList = () => {
                     </tbody>
                 </table>
             </div>
+
+            {/* Integração do Modal + Form */}
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={selectedDocente ? "Editar Docente" : "Novo Docente"}
+            >
+                <DocenteForm
+                    initialData={selectedDocente}
+                    onSuccess={handleFormSuccess}
+                    onCancel={() => setIsModalOpen(false)}
+                />
+            </Modal>
+
+
         </div>
     );
 };

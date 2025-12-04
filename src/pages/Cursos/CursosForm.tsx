@@ -10,97 +10,155 @@ interface CursoFormProps {
     onSuccess?: () => void;
     onCancel?: () => void;
 }
+
 export const CursoForm: React.FC<CursoFormProps> = ({ initialData, onSuccess, onCancel }) => {
-    const [titulo, setTitulo] = useState(initialData ? initialData.titulo : '');
-    const [areaTecnologica, setAreaTecnologica] = useState(initialData ? initialData.areaTecnologica : '');
-    const [cargaHoraria, setCargaHoraria] = useState(initialData ? initialData.cargaHoraria : 0);
-    const [areasTecnologicas, setAreasTecnologicas] = useState<AreaCurso[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [areasTecnologicas, setAreasTecnologicas] = useState<AreaCurso[]>([]);
+
+    // Inicialização do estado seguindo o padrão do RecursoForm
+    const [formData, setFormData] = useState<Partial<Curso>>({
+        titulo: '',
+        areaTecnologica: 0,
+        cargaHoraria: 0,
+        recursosIds: [] // Inicializa array vazio caso precise no futuro
+    });
+
+    // 1. Carregar Áreas da API
     useEffect(() => {
-        const fetchAreas = async () => {
+        const loadAreas = async () => {
             try {
-                const data = await AreaCursoService.getAll();
-                setAreasTecnologicas(data);
-            }       catch (error) { 
-                console.error("Erro ao buscar áreas tecnológicas:", error);
+                const areas = await AreaCursoService.getAll();
+                setAreasTecnologicas(areas);
+            } catch (error) {
+                console.error("Erro ao carregar áreas tecnológicas:", error);
             }
-        }
-        fetchAreas();
+        };
+        loadAreas();
     }, []);
 
-    const handleSubmit = async (e: React.FormEvent) => {    
+    // 2. Popula o formulário se for edição
+    useEffect(() => {
+        if (initialData) {
+            setFormData(initialData);
+        }
+    }, [initialData]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        
+        // Lógica para converter campos numéricos, similar ao 'quantidade' do exemplo anterior
+        const isNumericField = name === 'cargaHoraria' || name === 'areaTecnologica';
+
+        setFormData(prev => ({
+            ...prev,
+            [name]: isNumericField ? Number(value) : value
+        }));
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true); 
-        const cursoData: Curso = {
-            id: initialData ? initialData.id : 0,
-            titulo,
-            areaTecnologica,
-            cargaHoraria,
-        };
+        setIsLoading(true);
+
         try {
-            if (initialData) {
-                await CursoService.update(initialData.id, cursoData);
+            if (initialData && initialData.id) {
+                // Update
+                await CursoService.update(initialData.id, formData as Curso);
             } else {
-                await CursoService.create(cursoData);
+                // Create
+                await CursoService.create(formData as CursoCreate);
             }
-            if (onSuccess) onSuccess();
-        }
-        catch (error) {
+
+            if (onSuccess) {
+                onSuccess();
+            } else {
+                // Fallback para uso fora de modal
+                alert("Curso salvo com sucesso!");
+                setFormData({
+                    titulo: '',
+                    areaTecnologica: 0,
+                    cargaHoraria: 0,
+                    recursosIds: []
+                });
+            }
+        } catch (error) {
             console.error("Erro ao salvar curso:", error);
-            alert("Não foi possível salvar o curso. Verifique os dados e tente novamente.");
-        }
-        finally {
+            alert("Erro ao salvar curso. Verifique se a API está online.");
+        } finally {
             setIsLoading(false);
         }
     };
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Título */}
             <div>
-                <label className="block text-sm font-medium text-gray-700">Título do Curso</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Título do Curso</label>
                 <input
                     type="text"
-                    value={titulo}
-                    onChange={(e) => setTitulo(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    name="titulo"
+                    value={formData.titulo}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                    placeholder="Ex: Desenvolvimento de Sistemas"
                     required
                 />
             </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Área Tecnológica</label>
-                <select
-                    value={areaTecnologica}
-                    onChange={(e) => setAreaTecnologica(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                    required
+
+            {/* Grid: Área e Carga Horária */}
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Área Tecnológica</label>
+                    <select
+                        name="areaTecnologica"
+                        value={formData.areaTecnologica}
+                        onChange={handleChange}
+                        className="w-full p-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                        required
+                    >
+                        <option value="">Selecione uma área...</option>
+                        {areasTecnologicas.length === 0 && <option value="" disabled>Carregando áreas...</option>}
+                        {areasTecnologicas.map((area) => (
+                            <option key={area.id} value={area.id}>
+                                {area.nome}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Carga Horária (horas)</label>
+                    <input
+                        type="number"
+                        name="cargaHoraria"
+                        value={formData.cargaHoraria || 0}
+                        onChange={handleChange}
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+                        required
+                        min={1}
+                    />
+                </div>
+            </div>
+
+            {/* Footer de Ações */}
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 mt-6">
+                <Button 
+                    type="button" 
+                    variant="secondary" 
+                    onClick={() => {
+                        if (onCancel) onCancel();
+                    }}
+                    disabled={isLoading}
                 >
-                    <option value="" disabled>Selecione uma área</option>
-                    {areasTecnologicas.map((area) => (  
-                        <option key={area.id} value={area.id}>
-                            {area.nome}
-                        </option>
-                    ))}
-                </select>
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Carga Horária (em horas)</label> 
-                <input
-                    type="number"
-                    value={cargaHoraria}
-                    onChange={(e) => setCargaHoraria(Number(e.target.value))}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                    required
-                    min={1}
-                />
-            </div>
-            <div className="flex justify-end gap-2">
-                <Button type="button" variant="secondary" onClick={onCancel} disabled={isLoading}>
                     Cancelar
                 </Button>
-                <Button type="submit" variant="primary" disabled={isLoading}>
-                    {isLoading ? 'Salvando...' : 'Salvar'}
+                <Button 
+                    type="submit" 
+                    variant="primary" 
+                    isLoading={isLoading}
+                >
+                    {initialData ? 'Atualizar Curso' : 'Salvar Curso'}
                 </Button>
             </div>
         </form>
     );
-}
+};
