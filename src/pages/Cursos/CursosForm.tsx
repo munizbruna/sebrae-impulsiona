@@ -16,7 +16,7 @@ interface CursoFormProps {
 export const CursoForm: React.FC<CursoFormProps> = ({ initialData, onSuccess, onCancel }) => {
     // Estados do Curso
     const [titulo, setTitulo] = useState(initialData ? initialData.titulo : '');
-    const [areaTecnologica, setAreaTecnologica] = useState(initialData ? initialData.areaTecnologica : '');
+    const [areaTecnologica, setAreaTecnologica] = useState(initialData ? initialData.area : '');
     const [cargaHoraria, setCargaHoraria] = useState(initialData ? initialData.cargaHoraria : 0);
     
     // Estados de Dados Auxiliares
@@ -73,7 +73,8 @@ export const CursoForm: React.FC<CursoFormProps> = ({ initialData, onSuccess, on
         const cursoData: Curso = {
             id: initialData ? initialData.id : 0,
             titulo,
-            areaTecnologica: areaTecnologica.toString(), // Garante string p/ interface, mas backend espera int (cuidado com tipagem)
+            areaCursoId: Number(areaTecnologica),
+            area: '', // Campo area não é preenchido no formulário
             cargaHoraria,
             recursosIds: selectedRecursos // Envia lista de IDs
         };

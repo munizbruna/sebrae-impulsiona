@@ -1,7 +1,8 @@
 export interface Curso {
     id: number;
     titulo: string;
-    areaTecnologica: number; // Verifique se no C# é 'Area' ou 'AreaTecnologica'
+    areaCursoId: number; // Verifique se no C# é 'Area' ou 'AreaTecnologica'
+    area: string;
     cargaHoraria: number;    // Verifique se no C# é 'CH' ou 'CargaHoraria'
     recursosIds?: number[];  // Para mapear a relação many-to-many
 }
